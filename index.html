@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Palette Generator</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 30px 16px;
+      background: #f5f4f0;
+      color: #242521;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      width: min(900px, 100%);
+      margin: auto;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: clamp(28px, 6vw, 42px);
+    }
+
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .color-card {
+      overflow: hidden;
+      background: white;
+      border-radius: 12px;
+    }
+
+    .swatch {
+      height: 220px;
+    }
+
+    .color-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 5px;
+      padding: 10px;
+    }
+
+    .hex {
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    button {
+      padding: 8px;
+      border: 0;
+      border-radius: 6px;
+      background: #eeeeea;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #ddddda;
+    }
+
+    #generate {
+      margin-top: 24px;
+      padding: 12px 18px;
+      background: #292b27;
+      color: white;
+      font-size: 15px;
+    }
+
+    #generate:hover {
+      background: #454841;
+    }
+
+    #message {
+      min-height: 20px;
+      color: #60645d;
+      font-size: 14px;
+    }
+
+    @media (max-width: 650px) {
+      .palette {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .color-card:last-child {
+        grid-column: 1 / -1;
+      }
+
+      .swatch {
+        height: 170px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .palette {
+        gap: 8px;
+      }
+
+      .swatch {
+        height: 140px;
+      }
+
+      .color-info {
+        padding: 7px;
+      }
+
+      .hex {
+        font-size: 11px;
+      }
+
+      button {
+        padding: 6px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <h1>Color Palette Generator</h1>
+    <p>Generate colors, lock your favorites, and copy their codes.</p>
+
+    <section class="palette" id="palette"></section>
+
+    <button id="generate">Generate palette</button>
+    <p id="message" aria-live="polite"></p>
+  </main>
+
+  <script>
+    // These are the starting colors.
+    const colors = [
+      "#F4A261",
+      "#E76F51",
+      "#2A9D8F",
+      "#264653",
+      "#E9C46A"
+    ];
+
+    // Each false means that color is not locked.
+    const locked = [false, false, false, false, false];
+
+    const palette = document.getElementById("palette");
+    const message = document.getElementById("message");
+
+    // Make a random color code.
+    function randomColor() {
+      const number = Math.floor(Math.random() * 16777216);
+      return "#" + number.toString(16).padStart(6, "0").toUpperCase();
+    }
+
+    // Display the colors and their buttons.
+    function showPalette() {
+      palette.innerHTML = "";
+
+      colors.forEach(function(color, index) {
+        const card = document.createElement("div");
+        card.className = "color-card";
+
+        const swatch = document.createElement("div");
+        swatch.className = "swatch";
+        swatch.style.backgroundColor = color;
+
+        const info = document.createElement("div");
+        info.className = "color-info";
+
+        const code = document.createElement("span");
+        code.className = "hex";
+        code.textContent = color;
+
+        const copyButton = document.createElement("button");
+        copyButton.textContent = "Copy";
+        copyButton.addEventListener("click", function() {
+          copyColor(color);
+        });
+
+        const lockButton = document.createElement("button");
+        lockButton.textContent = locked[index] ? "🔒 Locked" : "🔓 Lock";
+        lockButton.addEventListener("click", function() {
+          locked[index] = !locked[index];
+          showPalette();
+        });
+
+        info.append(code, copyButton, lockButton);
+        card.append(swatch, info);
+        palette.appendChild(card);
+      });
+    }
+
+    // Generate new colors, except for locked colors.
+    function generatePalette() {
+      for (let i = 0; i < colors.length; i++) {
+        if (!locked[i]) {
+          colors[i] = randomColor();
+        }
+      }
+
+      message.textContent = "New palette generated!";
+      showPalette();
+    }
+
+    // Copy a color code.
+    async function copyColor(color) {
+      try {
+        await navigator.clipboard.writeText(color);
+        message.textContent = color + " copied!";
+      } catch {
+        message.textContent = "Copy is unavailable in this browser.";
+      }
+    }
+
+    document
+      .getElementById("generate")
+      .addEventListener("click", generatePalette);
+
+    // Show the starting palette.
+    showPalette();
+  </script>
+</body>
+</html>
